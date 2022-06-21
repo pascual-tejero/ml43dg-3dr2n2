@@ -1,6 +1,11 @@
 # ML43D - 3DR2N2
 
-
+# Project Members
+In alphabetical order by surname:
+1. Cervera, Pascual Tejero
+2. Kalkan, Doğukan
+3. Korkmaz, Baran Deniz
+4. Zverev, Daniil
 
 ## Getting started
 
