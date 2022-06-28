@@ -1,67 +1,113 @@
+import torch.nn as nn
 import numpy as np
 
-from models.base_gru_net import BaseGRUNet
-from lib.layers import FCConv3DLayer_torch, Unpool3DLayer, SoftmaxWithLoss3D
+class Encoder(nn.Module):
+    def __init__(self, type):
+        super(Encoder, self).__init__()
+        if type in ['simple','residual']:
+            self.type = type
+        else:
+            raise TypeError("Illegal Type for Encoder")
+        n_convfilter = [96, 128, 256, 256, 256, 256]
+        self.conv1a = nn.Conv2d(in_channels=3, out_channels=n_convfilter[0], kernel_size=7, padding=3)
+        self.conv2a = nn.Conv2d(in_channels=n_convfilter[0], out_channels=n_convfilter[1], kernel_size=3, padding=1)
+        self.conv3a = nn.Conv2d(in_channels=n_convfilter[1], out_channels=n_convfilter[2], kernel_size=3, padding=1)
+        self.conv4a = nn.Conv2d(in_channels=n_convfilter[2], out_channels=n_convfilter[3], kernel_size=3, padding=1)
+        self.conv5a = nn.Conv2d(in_channels=n_convfilter[3], out_channels=n_convfilter[4], kernel_size=3, padding=1)
+        self.conv6a = nn.Conv2d(in_channels=n_convfilter[4], out_channels=n_convfilter[5], kernel_size=3, padding=1)
+        if self.type == 'residual':
+            self.conv1b = nn.Conv2d(in_channels=n_convfilter[0], out_channels=n_convfilter[0], kernel_size=3, padding=1)
+            self.conv2b = nn.Conv2d(in_channels=n_convfilter[1], out_channels=n_convfilter[1], kernel_size=3, padding=1)
+            self.conv2c = nn.Conv2d(in_channels=n_convfilter[0], out_channels=n_convfilter[1], kernel_size=1, padding=0)
+            self.conv3b = nn.Conv2d(in_channels=n_convfilter[2], out_channels=n_convfilter[2], kernel_size=3, padding=1)
+            self.conv3c = nn.Conv2d(in_channels=n_convfilter[1], out_channels=n_convfilter[2], kernel_size=1, padding=0)
+            self.conv4b = nn.Conv2d(in_channels=n_convfilter[3], out_channels=n_convfilter[3], kernel_size=3, padding=1)
+            self.conv5b = nn.Conv2d(in_channels=n_convfilter[4], out_channels=n_convfilter[4], kernel_size=3, padding=1)
+            self.conv5c = nn.Conv2d(in_channels=n_convfilter[3], out_channels=n_convfilter[4], kernel_size=1, padding=0)
+            self.conv6b = nn.Conv2d(in_channels=n_convfilter[5], out_channels=n_convfilter[5], kernel_size=3, padding=1)
+        self.fc = nn.Linear(in_features=n_convfilter[5]*(self.get_spatial_dim(input_spatial_dim=127,num_pooling=6)**2), out_features=1024)
+        self.pool = nn.MaxPool2d(kernel_size=2, padding=1)
+        self.leakyReLU = nn.LeakyReLU()
 
-import torch
-from torch.autograd import Variable
-import torch.nn as nn
-from torch.nn import Linear, Conv2d, MaxPool2d, \
-                     LeakyReLU, Conv3d, Tanh, Sigmoid
 
+    def forward(self, x_in):
+        if self.type == 'simple':
+            x = self.conv1a(x_in)
+            x = self.pool(x)
+            x = self.leakyReLU(x)
+            x = self.conv2a(x)
+            x = self.pool(x)
+            x = self.leakyReLU(x)
+            x = self.conv3a(x)
+            x = self.pool(x)
+            x = self.leakyReLU(x)
+            x = self.conv4a(x)
+            x = self.pool(x)
+            x = self.leakyReLU(x)
+            x = self.conv5a(x)
+            x = self.pool(x)
+            x = self.leakyReLU(x)
+            x = self.conv6a(x)
+            x = self.pool(x)
+            x = self.leakyReLU(x)
+            x = x.view(x.size(0), -1)
+            x = self.fc(x)
+            out = self.leakyReLU(x)
+            return out
+        else:
+            conv1a = self.conv1a(x_in)
+            leakyReLU1a = self.leakyReLU(conv1a)
+            conv1b = self.conv1b(leakyReLU1a)
+            leakyReLU1 = self.leakyReLU(conv1b)
+            pool1 = self.pool(leakyReLU1)
 
+            conv2a = self.conv2a(pool1)
+            leakyReLU2a = self.leakyReLU(conv2a)
+            conv2b = self.conv2b(leakyReLU2a)
+            leakyReLU2 = self.leakyReLU(conv2b)
+            conv2c = self.conv2c(pool1)
+            res2 = conv2c + leakyReLU2
+            pool2 = self.pool(res2)
 
-class encoder(nn.Module):
-    def __init__(self):
-        # conv7_kernel_size = 7 --> padding = (7-1)/2 = 3
-        # conv3_kernel_size = 3 --> padding = (3-1)/2 = 1
+            conv3a = self.conv3a(pool2)
+            leakyReLU3a = self.leakyReLU(conv3a)
+            conv3b = self.conv3b(leakyReLU3a)
+            leakyReLU3 = self.leakyReLU(conv3b)
+            conv3c = self.conv3c(pool2)
+            res3 = conv3c + leakyReLU3
+            pool3 = self.pool(res3)
 
-        self.conv_7 = nn.Conv2d(in_channels = 1, out_channels = 1, kernel_size = 7, stride = 1, padding = 3)
-        self.conv_3 = nn.Conv2d(in_channels = 1, out_channels = 1, kernel_size = 3, stride = 1, padding = 1)
-        self.conv_1 = nn.Conv2d(in_channels = 1, out_channels = 1, kernel_size = 1, stride = 1, padding = 0)
+            conv4a = self.conv4a(pool3)
+            leakyReLU4a = self.leakyReLU(conv4a)
+            conv4b = self.conv4b(leakyReLU4a)
+            leakyReLU4 = self.leakyReLU(conv4b)
+            pool4 = self.pool(leakyReLU4)
 
-        self.fc = nn.Linear(in_features = 1, out_features = 1024)
+            conv5a = self.conv5a(pool4)
+            leakyReLU5a = self.leakyReLU(conv5a)
+            conv5b = self.conv5b(leakyReLU5a)
+            leakyReLU5 = self.leakyReLU(conv5b)
+            conv5c = self.conv5c(pool4)
+            res5 = conv5c + leakyReLU5
+            pool5 = self.pool(res5)
 
-        self.pool = MaxPool2d(kernel_size= 2, padding= 1)
+            conv6a = self.conv6a(pool5)
+            leakyReLU6a = self.leakyReLU(conv6a)
+            conv6b = self.conv6b(leakyReLU6a)
+            leakyReLU6 = self.leakyReLU(conv6b)
+            res6 = pool5 + leakyReLU6
+            pool6 = self.pool(res6)
 
-        self.leaky_relu = LeakyReLU(negative_slope= 0.01)
+            pool6 = pool6.view(pool6.size(0), -1)
 
-    def forward(self, x, type):
-        if type == 'simple':
-            x_conv = nn.Sequential(self.conv_7, self.pool, self.leaky_relu,
-                                   self.conv_3, self.pool, self.leaky_relu,
-                                   self.conv_3, self.pool, self.leaky_relu,
-                                   self.conv_3, self.pool, self.leaky_relu,
-                                   self.conv_3, self.pool, self.leaky_relu,
-                                   self.conv_3, self.pool, self.leaky_relu,
-                                   self.fc, self.leaky_relu)
-            
-            return x_conv
+            fc7 = self.fc(pool6)
+            out = self.leakyReLU(fc7)
+            return out
 
-        if type == 'deep':
-            x_conv_111 = self.conv_7(self.conv_3(x))
-            x_conv_112 = self.conv_1(x)
-            x_conv_12 = self.leaky_relu(self.pool(x_conv_111 + x_conv_112))
-
-            x_conv_211 = self.conv_3(self.conv_3(x_conv_12))
-            x_conv_212 = self.conv_1(x_conv_12)
-            x_conv_22 = self.leaky_relu(self.pool(x_conv_211 + x_conv_212))
-
-            x_conv_311 = self.conv_3(self.conv_3(x_conv_22))
-            x_conv_312 = self.conv_1(x_conv_22)
-            x_conv_32 = self.leaky_relu(self.pool(x_conv_311 + x_conv_312))
-
-            x_conv_411 = self.conv_3(self.conv_3(x_conv_32))
-            x_conv_42 = self.leaky_relu(self.pool(x_conv_411))      
-
-            x_conv_511 = self.conv_3(self.conv_3(x_conv_42))
-            x_conv_512 = self.conv_1(x_conv_42)
-            x_conv_52 = self.leaky_relu(self.pool(x_conv_511 + x_conv_512))      
-
-            x_conv_611 = self.conv_3(self.conv_3(x_conv_52))
-            x_conv_612 = self.conv_1(x_conv_52)
-            x_conv_62 = self.leaky_relu(self.pool(x_conv_611 + x_conv_612))      
-
-            x_conv = self.leaky_relu(self.fc(x_conv_62))
-            
-            return x_conv
+    def get_spatial_dim(self, input_spatial_dim, num_pooling):
+        kernel_size = 2
+        padding = 1
+        spatial_dim = input_spatial_dim
+        for i in range(num_pooling):
+            spatial_dim = np.floor((spatial_dim - kernel_size + 2*padding)/2 + 1)
+        return int(spatial_dim)

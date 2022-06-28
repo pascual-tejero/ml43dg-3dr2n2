@@ -44,33 +44,33 @@ class Decoder(nn.Module):
         else:
             unpool7 = self.unpool3d(x_in)
             conv7a = self.conv7a(unpool7)
-            rect7a = self.leakyReLU(conv7a)
-            conv7b = self.conv7b(rect7a)
-            rect7 = self.leakyReLU(conv7b)
-            res7 = unpool7 + rect7
+            leakyReLU7a = self.leakyReLU(conv7a)
+            conv7b = self.conv7b(leakyReLU7a)
+            leakyReLU7 = self.leakyReLU(conv7b)
+            res7 = unpool7 + leakyReLU7
 
             unpool8 = self.unpool3d(res7)
             conv8a = self.conv8a(unpool8)
-            rect8a = self.leakyReLU(conv8a)
-            conv8b = self.conv8b(rect8a)
-            rect8 = self.leakyReLU(conv8b)
-            res8 = unpool8 + rect8
+            leakyReLU8a = self.leakyReLU(conv8a)
+            conv8b = self.conv8b(leakyReLU8a)
+            leakyReLU8 = self.leakyReLU(conv8b)
+            res8 = unpool8 + leakyReLU8
 
             unpool9 = self.unpool3d(res8)
             conv9a = self.conv9a(unpool9)
-            rect9a = self.leakyReLU(conv9a)
-            conv9b = self.conv9b(rect9a)
-            rect9 = self.leakyReLU(conv9b)
+            leakyReLU9a = self.leakyReLU(conv9a)
+            conv9b = self.conv9b(leakyReLU9a)
+            leakyReLU9 = self.leakyReLU(conv9b)
 
             conv9c = self.conv9c(unpool9)
-            res9 = conv9c + rect9
+            res9 = conv9c + leakyReLU9
 
             conv10a = self.conv10a(res9)
-            rect10a = self.leakyReLU(conv10a)
-            conv10b = self.conv10b(rect10a)
-            rect10 = self.leakyReLU(conv10b)
-            conv10c = self.conv10c(rect10)
-            res10 = conv10c + rect10
+            leakyReLU10a = self.leakyReLU(conv10a)
+            conv10b = self.conv10b(leakyReLU10a)
+            leakyReLU10 = self.leakyReLU(conv10b)
+            conv10c = self.conv10c(leakyReLU10)
+            res10 = conv10c + leakyReLU10
 
             out = self.conv11(res10)
         return out
