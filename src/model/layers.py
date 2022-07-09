@@ -1,5 +1,28 @@
 import torch
 import torch.nn as nn
+import numpy as np
+
+class GRUGate3D(nn.Module):
+    def __init__(self, fan_in, filter_params, output_shape):
+        super(GRUGate3D, self).__init__()
+        self.fan_in = fan_in # 1024
+        self.filter_params = filter_params # (128, 128, 3, 3, 3)
+        self.output_shape = output_shape # (batch_size, 128, 4, 4, 4)
+        self.padding = int((filter_params[2] - 1) / 2)
+        self.linear = nn.Linear(in_features=fan_in, out_features=int(np.prod(output_shape[1:])), bias=False) # Different from the final fully connected layer of the encoder. Please visit the 3DR2N2 article for the figure.
+        self.conv3d = nn.Conv3d(in_channels=filter_params[0],
+                                out_channels=filter_params[1],
+                                kernel_size=filter_params[2],
+                                padding=self.padding,
+                                bias=False)
+        self.bias = nn.Parameter(torch.FloatTensor(1, output_shape[1], 1, 1, 1).fill_(0.1))
+
+    def forward(self, encoder_out, h):
+        # TODO: This function might require some debugging because the output dimensions might not match!
+        output_shape_tmp = list(self.output_shape)
+        output_shape_tmp[0] = -1 # To deal with different batch sizes
+        out = self.linear(encoder_out).view(*output_shape_tmp) + self.conv3d(h) + self.bias
+        return out
 
 class Unpool3DLayer(nn.Module):
     def __init__(self, unpool_size=2, padding=0):
