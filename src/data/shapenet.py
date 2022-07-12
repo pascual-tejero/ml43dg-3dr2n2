@@ -55,7 +55,6 @@ class ColoredShapeNet(Dataset):
         sample = {
             "name": shape_name,  # identifier of the shape
             "index": index,  # index parameter
-            "color_indices": index,  # color index parameter
             # ↓ [num_renders, img_width, img_height, 3]
             "images": images,
             # ↓ [num_renders]
@@ -207,7 +206,7 @@ class EmptyDataset(Dataset):
         return 10
 
 
-class ColoredShapeNetDataModule(pl.LightningDataModule):
+class ShapeNetDataModule(pl.LightningDataModule):
     train_dataset: ColoredShapeNet
     val_dataset: EmptyDataset
 
