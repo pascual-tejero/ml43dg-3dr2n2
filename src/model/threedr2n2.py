@@ -1,19 +1,34 @@
 import torch.nn as nn
+import typing as t
+import torch
 from utils import initialize_tensor
 from encoder import Encoder
 from decoder import Decoder
 from convRNN3D import ConvGRU3D
+from loss import SoftmaxWithLoss3D
+import pytorch_lightning as pl
 
-class ThreeDeeR2N2(nn.Module):
-    def __init__(self, encoderDecoder_type, convRNN3D_type, convRNN3D_kernel_size, batch_size):
+
+class ThreeDeeR2N2(pl.LightningModule):
+    def __init__(
+            self,
+            encoderDecoder_type: str,
+            convRNN3D_type: str,
+            convRNN3D_kernel_size: int,
+            batch_size: int,
+            learning_rate: float = 0.001
+    ):
         super(ThreeDeeR2N2, self).__init__()
         self.batch_size = batch_size
+        self.learning_rate = learning_rate
         self.image_shape = (3, 127, 127)
         self.input_shape = (self.batch_size, *self.image_shape)
 
         self.grid_convRNN3D = 4
         self.hidden_size = 128
-        self.h_shape = (self.batch_size, self.hidden_size, self.grid_convRNN3D, self.grid_convRNN3D, self.grid_convRNN3D)
+        self.h_shape = (
+            self.batch_size, self.hidden_size, self.grid_convRNN3D, self.grid_convRNN3D, self.grid_convRNN3D
+        )
 
         self.encoder, self.decoder, self.convRNN3D = None, None, None
 
@@ -21,13 +36,15 @@ class ThreeDeeR2N2(nn.Module):
         self.initialize_decoder(encoderDecoder_type)
         self.initialize_convRNN3d(convRNN3D_type, convRNN3D_kernel_size)
 
+        self.loss = SoftmaxWithLoss3D()
+
     def initialize_encoder(self, type):
-        if type.lower() not in ['simple','residual']:
+        if type.lower() not in ['simple', 'residual']:
             raise Exception("Type Error: Encoder")
         self.encoder = Encoder(type.lower())
 
     def initialize_decoder(self, type):
-        if type.lower() not in ['simple','residual']:
+        if type.lower() not in ['simple', 'residual']:
             raise Exception("Type Error: Decoder")
         self.decoder = Decoder(type.lower())
 
@@ -70,3 +87,33 @@ class ThreeDeeR2N2(nn.Module):
             u_list.append(u)
         decoder_out = self.decoder(h)
         return decoder_out
+
+    # region Pytorch Lightning
+
+    def configure_optimizers(self):
+        optimizer = torch.optim.Adam(params=self.parameters(), lr=self.learning_rate)
+
+        return optimizer
+
+    def training_step(self, train_batch, **kwargs):
+        x = train_batch['images'].permute(1, 0, 2, 3, 4)
+        y = train_batch['label']
+        prediction = self.forward(x)
+        train_loss = self.loss(prediction, y)
+        self.log('train_loss', train_loss)
+        return train_loss
+
+    def validation_step(self, val_batch, **kwargs):
+        x = val_batch['images'].permute(1, 0, 2, 3, 4)
+        y = val_batch['label']
+        prediction = self.forward(x)
+        val_loss = self.loss(prediction, y)
+        self.log('val_loss', val_loss)
+        return val_loss
+
+    def transfer_batch_to_device(self, batch: t.Any, device: torch.device) -> t.Any:
+        batch["images"] = batch["images"].to(device)
+
+        return batch
+
+    # endregion
