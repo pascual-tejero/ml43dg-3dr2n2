@@ -20,7 +20,6 @@ class ConvGRU3D(nn.Module):
 
     def forward(self, encoder_out, h):
         """
-
         :param encoder_out: (batch_size, 1024,)
         :param h: (batch_size,128,4,4,4)
         :return:

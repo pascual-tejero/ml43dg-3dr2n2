@@ -5,10 +5,7 @@ from layers import Unpool3DLayer
 class Decoder(nn.Module):
     def __init__(self, type):
         super(Decoder, self).__init__()
-        if type in ['simple', 'residual']:
-            self.type = type
-        else:
-            raise TypeError("Illegal Type for Decoder")
+        self.type = type
         n_deconvfilter = [128, 128, 128, 64, 32, 2]
         self.conv7a = nn.Conv3d(in_channels=n_deconvfilter[0], out_channels=n_deconvfilter[1],kernel_size=(3,3,3),padding=1)
         self.conv8a = nn.Conv3d(in_channels=n_deconvfilter[1], out_channels=n_deconvfilter[2], kernel_size=(3,3,3), padding=1)

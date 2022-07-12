@@ -4,10 +4,7 @@ import numpy as np
 class Encoder(nn.Module):
     def __init__(self, type):
         super(Encoder, self).__init__()
-        if type in ['simple','residual']:
-            self.type = type
-        else:
-            raise TypeError("Illegal Type for Encoder")
+        self.type = type
         n_convfilter = [96, 128, 256, 256, 256, 256]
         self.conv1a = nn.Conv2d(in_channels=3, out_channels=n_convfilter[0], kernel_size=7, padding=3)
         self.conv2a = nn.Conv2d(in_channels=n_convfilter[0], out_channels=n_convfilter[1], kernel_size=3, padding=1)
