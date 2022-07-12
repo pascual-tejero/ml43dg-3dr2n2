@@ -1,0 +1,15 @@
+torch
+pytorch-lightning
+torchvision
+numpy
+trimesh
+matplotlib
+scikit-image
+tqdm
+scipy
+pydantic
+plotly
+wandb
+pandas
+scikit-learn
+pytorch3d
