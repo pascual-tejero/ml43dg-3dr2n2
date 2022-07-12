@@ -1,18 +1,18 @@
 import torch.nn as nn
 import typing as t
 import torch
-from utils import initialize_tensor
-from encoder import Encoder
-from decoder import Decoder
-from convRNN3D import ConvGRU3D
-from loss import SoftmaxWithLoss3D
+from .utils import initialize_tensor
+from .encoder import Encoder
+from .decoder import Decoder
+from .convRNN3D import ConvGRU3D
+from .loss import SoftmaxWithLoss3D
 import pytorch_lightning as pl
 
 
 class ThreeDeeR2N2(pl.LightningModule):
     def __init__(
             self,
-            encoderDecoder_type: str,
+            encoder_decoder_type: str,
             convRNN3D_type: str,
             convRNN3D_kernel_size: int,
             batch_size: int,
@@ -32,8 +32,8 @@ class ThreeDeeR2N2(pl.LightningModule):
 
         self.encoder, self.decoder, self.convRNN3D = None, None, None
 
-        self.initialize_encoder(encoderDecoder_type)
-        self.initialize_decoder(encoderDecoder_type)
+        self.initialize_encoder(encoder_decoder_type)
+        self.initialize_decoder(encoder_decoder_type)
         self.initialize_convRNN3d(convRNN3D_type, convRNN3D_kernel_size)
 
         self.loss = SoftmaxWithLoss3D()
@@ -95,24 +95,31 @@ class ThreeDeeR2N2(pl.LightningModule):
 
         return optimizer
 
-    def training_step(self, train_batch, **kwargs):
-        x = train_batch['images'].permute(1, 0, 2, 3, 4)
-        y = train_batch['label']
+    def training_step(self, batch: t.Dict[str, t.Any], batch_idx):
+        x = batch['images'].permute(1, 0, 2, 3, 4)
+        print(f"(training_step)\tShape of X: {x.shape}")
+        y = batch['label']
         prediction = self.forward(x)
         train_loss = self.loss(prediction, y)
         self.log('train_loss', train_loss)
         return train_loss
 
-    def validation_step(self, val_batch, **kwargs):
-        x = val_batch['images'].permute(1, 0, 2, 3, 4)
-        y = val_batch['label']
+    def validation_step(self,  batch: t.Dict[str, t.Any], batch_idx):
+        x = batch['images'].permute(1, 0, 2, 3, 4)
+        y = batch['label']
         prediction = self.forward(x)
         val_loss = self.loss(prediction, y)
         self.log('val_loss', val_loss)
         return val_loss
 
-    def transfer_batch_to_device(self, batch: t.Any, device: torch.device) -> t.Any:
+    def transfer_batch_to_device(
+            self,
+            batch: t.Dict[str, t.Any],
+            device: torch.device,
+            dataloader_idx: int,
+    ) -> t.Dict[str, torch.Tensor]:
         batch["images"] = batch["images"].to(device)
+        batch["label"] = batch["label"].to(device)
 
         return batch
 

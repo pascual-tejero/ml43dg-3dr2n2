@@ -6,8 +6,8 @@ import pytorch_lightning as pl
 import torch
 import torchvision.transforms.functional as TF
 import trimesh
-from PIL.Image import Image
-from pytorch3d.renderer import FoVPerspectiveCameras, look_at_view_transform
+import PIL.Image as Image
+# from pytorch3d.renderer import FoVPerspectiveCameras, look_at_view_transform
 from torch.utils.data import DataLoader, Dataset
 from torchvision.transforms.functional import adjust_hue
 
@@ -18,10 +18,10 @@ class ColoredShapeNet(Dataset):
     """
 
     def __init__(
-        self,
-        dataset_path: str,
-        num_renders: int,
-        split: t.Optional[str] = None,
+            self,
+            dataset_path: str,
+            num_renders: int,
+            split: t.Optional[str] = None,
     ):
         """
         :@param num_sample_points: number of points to sample for sdf values per shape
@@ -50,15 +50,20 @@ class ColoredShapeNet(Dataset):
         # get shape_id at index
         shape_name = self.items[index]
 
-        cameras, images, silhouettes, depth_maps, _, _, _ = self.get_renders(shape_name)
+        # cameras, images, voxels, silhouettes, depth_maps, _, _, _ = self.get_renders(shape_name)
+        images, voxels, silhouettes, depth_maps, _, _, _ = self.get_renders(
+            shape_name,
+            renders_idx=list(range(5))
+        )
 
         sample = {
             "name": shape_name,  # identifier of the shape
             "index": index,  # index parameter
+            "label": voxels,
             # ↓ [num_renders, img_width, img_height, 3]
             "images": images,
             # ↓ [num_renders]
-            "cameras": cameras,
+            # "cameras": cameras,
             # ↓ [num_renders, img_width, img_height, 1]
             "silhouettes": silhouettes,
             # ↓ [num_renders, img_width, img_height, 1]
@@ -76,7 +81,7 @@ class ColoredShapeNet(Dataset):
 
     @staticmethod
     def hue_shift(
-        colors: torch.Tensor, index: int, num_color_shifts: int
+            colors: torch.Tensor, index: int, num_color_shifts: int
     ) -> torch.Tensor:
         color_idx = index % num_color_shifts
 
@@ -95,11 +100,12 @@ class ColoredShapeNet(Dataset):
         return colors
 
     def get_renders(
-        self,
-        shape_id: str,
-        renders_idx: t.Optional[t.List[int]] = None,
+            self,
+            shape_id: str,
+            renders_idx: t.Optional[t.List[int]] = None,
     ) -> t.Tuple[
-        FoVPerspectiveCameras,
+        # FoVPerspectiveCameras,
+        torch.Tensor,
         torch.Tensor,
         torch.Tensor,
         torch.Tensor,
@@ -138,12 +144,12 @@ class ColoredShapeNet(Dataset):
         images = []
         silhouettes = []
 
+        voxels = torch.load(self.dataset_path / str(shape_id) / "voxels.pt")
+
         for scan_dir in scans_dirs:
             path_to_scan = path_to_scans / scan_dir
             scan_meta = torch.load(path_to_scan / "meta.pt")
-            scan_image = TF.to_tensor(Image.open(path_to_scan / "image.jpg")).permute(
-                1, 2, 0
-            )
+            scan_image = TF.to_tensor(Image.open(path_to_scan / "image.jpg"))
 
             # unwrap scan data
             elev.append(scan_meta["elev"])
@@ -153,14 +159,16 @@ class ColoredShapeNet(Dataset):
             depth_maps.append(scan_meta["depth_map"][None])
             images.append(scan_image[None])
 
-        R, T = look_at_view_transform(dist=dists, elev=elev, azim=azim)
-        cameras = FoVPerspectiveCameras(R=R, T=T)
+        # R, T = look_at_view_transform(dist=dists, elev=elev, azim=azim)
+        # cameras = FoVPerspectiveCameras(R=R, T=T)
 
         images = torch.cat(images)
         silhouettes = torch.cat(silhouettes)
         depth_maps = torch.cat(depth_maps)
 
-        return cameras, images, silhouettes, depth_maps, elev, azim, dists
+        # return cameras, images, voxels, silhouettes, depth_maps, elev, azim, dists
+        return images, voxels, silhouettes, depth_maps, elev, azim, dists
+
 
     def get_mesh(self, shape_id):
         """
@@ -211,20 +219,22 @@ class ShapeNetDataModule(pl.LightningDataModule):
     val_dataset: EmptyDataset
 
     def __init__(
-        self,
-        batch_size: int,
-        num_workers: int,
-        *,
-        num_renders: int = 100,
-        path_to_split: str,
-        path_to_dataset: str,
+            self,
+            batch_size: int,
+            num_workers: int,
+            *,
+            num_renders: int = 100,
+            train_split: str,
+            val_split: str,
+            path_to_dataset: str,
     ):
         super().__init__()
 
         self.num_renders = num_renders
 
         self.path_to_dataset = path_to_dataset
-        self.path_to_split = path_to_split
+        self.train_split = train_split
+        self.val_split = val_split
         self.batch_size = batch_size
         self.num_workers = num_workers
 
@@ -232,10 +242,14 @@ class ShapeNetDataModule(pl.LightningDataModule):
         self.train_dataset = ColoredShapeNet(
             dataset_path=self.path_to_dataset,
             num_renders=self.num_renders,
-            split=self.path_to_split,
+            split=self.train_split,
         )
 
-        self.val_dataset = EmptyDataset()
+        self.val_dataset = ColoredShapeNet(
+            dataset_path=self.path_to_dataset,
+            num_renders=self.num_renders,
+            split=self.val_split,
+        )
 
     def train_dataloader(self):
         return DataLoader(

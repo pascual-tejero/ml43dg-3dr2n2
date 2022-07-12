@@ -8,6 +8,7 @@ from pytorch_lightning import seed_everything
 
 from src.configuration.config import TrainConfig
 from src.data.shapenet import ShapeNetDataModule
+from src.model.threedr2n2 import ThreeDeeR2N2
 
 
 def train_loop(config: TrainConfig, resume_from: t.Optional[str], run_id: t.Optional[str]) -> None:
@@ -16,13 +17,20 @@ def train_loop(config: TrainConfig, resume_from: t.Optional[str], run_id: t.Opti
         batch_size=config.batch_size,
         num_workers=config.num_workers,
         num_renders=config.num_renders,
-        path_to_split=config.path_to_split,
+        train_split=config.train_split,
+        val_split=config.val_split,
         path_to_dataset=config.path_to_dataset
     )
     datamodule.setup()
 
     # Instantiate model
-    model = ...
+    model = ThreeDeeR2N2(
+        encoder_decoder_type=config.encoder_decoder_type,
+        convRNN3D_type=config.conv_rnn3d_type,
+        convRNN3D_kernel_size=config.conv_rnn3d_kernel_size,
+        batch_size=config.batch_size,
+        learning_rate=config.learning_rate,
+    )
 
     # Create logger
     if config.logger_type == "wandb":
@@ -38,13 +46,11 @@ def train_loop(config: TrainConfig, resume_from: t.Optional[str], run_id: t.Opti
     trainer = Trainer(
         gpus=config.gpus,
         check_val_every_n_epoch=config.validate_every_n,
-        default_root_dir=config.resume_ckpt_path,
         logger=logger,
         log_every_n_steps=1,
         max_epochs=config.max_epochs,
-        amp_backend="native",
-        resume_from_checkpoint=resume_from,
-        accumulate_grad_batches=config.accumulate_grad_batches,
+        # resume_from_checkpoint=resume_from,
+        # accumulate_grad_batches=config.accumulate_grad_batches,
     )
     trainer.fit(model, datamodule=datamodule)
 
@@ -55,7 +61,7 @@ if __name__ == "__main__":
         "--config",
         type=str,
         help="Path to config file",
-        default="./configuration/train.ini"
+        default="./src/configuration/train.ini"
     )
     parser.add_argument(
         "--resume_from",
@@ -97,3 +103,5 @@ if __name__ == "__main__":
         train_loop(config, args.resume_from, args.run_id)
     except KeyboardInterrupt:
         print("Training successfully interrupted.")
+
+# https://drive.google.com/file/d/1Ur9xdWe6d1WGX5WZzJuDvSLgPTeRopea/view?usp=sharing

@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from layers import GRUGate3D
+from .layers import GRUGate3D
 
 class ConvGRU3D(nn.Module):
     def __init__(self, fan_in, hidden_size, grid_size, kernel_size):
