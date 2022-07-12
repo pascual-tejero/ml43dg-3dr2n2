@@ -20,8 +20,17 @@ LOG_FILE = "./dataset_scan_log.txt"
 
 def scan_sample(input):
     try:
-        model_id, dataset_path, num_views, image_size, device_name, num_batch = input
-        dist = 2.7
+        (
+            model_id,
+            dataset_path,
+            obj_prefix,
+            num_views,
+            image_size,
+            dist,
+            device_name,
+            num_batch,
+        ) = input
+
         device = torch.device(device_name)
 
         if device_name.startswith("cuda"):
@@ -31,7 +40,7 @@ def scan_sample(input):
         obj_path = Path(dataset_path) / model_id
         with torch.no_grad():
             renders = generate_renders(
-                mesh_path=obj_path / "models/model_normalized.obj",
+                mesh_path=obj_path / obj_prefix,
                 num_views=num_views,
                 image_size=image_size,
                 device=device,
@@ -94,6 +103,19 @@ if __name__ == "__main__":
         help="Number of batches foe simultaneous render",
         default=10,
     )
+    parser.add_argument(
+        "--obj_prefix",
+        type=str,
+        help="Prefix for obj files",
+        default="model_normalized.obj",
+    )
+    parser.add_argument(
+        "--dist",
+        type=float,
+        help="Distance for renders",
+        default=2.7,
+    )
+
     args = parser.parse_args()
 
     # colorizing
@@ -102,8 +124,10 @@ if __name__ == "__main__":
         (
             model_id,
             args.dataset,
+            args.obj_prefix,
             args.num_scans,
             args.image_size,
+            args.dist,
             args.device,
             args.num_batch,
         )
