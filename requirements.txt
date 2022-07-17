@@ -13,3 +13,4 @@ wandb
 pandas
 scikit-learn
 pytorch3d
+open3d

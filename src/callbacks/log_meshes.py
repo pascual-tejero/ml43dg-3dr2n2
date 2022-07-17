@@ -3,7 +3,6 @@ from io import StringIO
 
 import pytorch_lightning as pl
 import torch
-import trimesh
 import wandb
 from pytorch3d.ops import cubify
 from pytorch_lightning.callbacks import Callback

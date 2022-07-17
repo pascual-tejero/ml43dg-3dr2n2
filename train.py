@@ -7,9 +7,35 @@ from pytorch_lightning import Trainer
 from pytorch_lightning import loggers as pl_loggers
 from pytorch_lightning import seed_everything
 
+from src.callbacks import LogMeshesCallback, LogModelWightsCallback
 from src.configuration.config import TrainConfig
 from src.data.shapenet import ShapeNetDataModule
 from src.model.threedr2n2 import ThreeDeeR2N2
+
+
+def over_write_config(cli_args, config):
+    """This methods overwrite config fields with passed to cli arguments"""
+
+    for k, v in vars(cli_args).items():
+        if hasattr(config, k):
+            setattr(config, k, type(getattr(config, k))(v))
+
+
+def parse_arguments(parser):
+    """
+    This method construct new parser for cli command with new unregisters
+    arguments with str type and runs `parse_args` on it.
+    """
+
+    parsed, unknown = parser.parse_known_args()
+
+    for arg in unknown:
+        if arg.startswith(("-", "--")):
+            # you can pass any arguments to add_argument
+            parser.add_argument(arg.split("=")[0], type=str)
+
+    args = parser.parse_args()
+    return args
 
 
 def train_loop(
@@ -52,6 +78,10 @@ def train_loop(
         logger=logger,
         log_every_n_steps=1,
         max_epochs=config.max_epochs,
+        callbacks=[
+            LogMeshesCallback(log_every=config.validate_every_n),
+            LogModelWightsCallback(log_every=config.validate_every_n),
+        ]
         # resume_from_checkpoint=resume_from,
         # accumulate_grad_batches=config.accumulate_grad_batches,
     )
@@ -87,7 +117,7 @@ if __name__ == "__main__":
         help="wandb run id",
         default="",
     )
-    args = parser.parse_args()
+    args = parse_arguments(parser)
 
     # make it deterministic
     seed_everything(args.seed)
@@ -99,6 +129,7 @@ if __name__ == "__main__":
 
     # Unpack config to typed config class
     config = TrainConfig.construct_typed_config(ini_config)
+    over_write_config(args, config)
 
     # Run training process
     print(f"Running training process..")
@@ -106,5 +137,3 @@ if __name__ == "__main__":
         train_loop(config, args.resume_from, args.run_id)
     except KeyboardInterrupt:
         print("Training successfully interrupted.")
-
-# https://drive.google.com/file/d/1Ur9xdWe6d1WGX5WZzJuDvSLgPTeRopea/view?usp=sharing

@@ -4,6 +4,8 @@ import traceback
 from multiprocessing import Pool, set_start_method
 from pathlib import Path
 
+import numpy as np
+import open3d as o3d
 import torch
 from torchvision.utils import save_image
 from tqdm import tqdm
@@ -38,9 +40,11 @@ def scan_sample(input):
 
         # creat renders
         obj_path = Path(dataset_path) / model_id
+        mesh_path = str(obj_path / obj_prefix)
+
         with torch.no_grad():
             renders = generate_renders(
-                mesh_path=obj_path / obj_prefix,
+                mesh_path=mesh_path,
                 num_views=num_views,
                 image_size=image_size,
                 device=device,
@@ -50,6 +54,29 @@ def scan_sample(input):
             )
         if device_name.startswith("cuda"):
             torch.cuda.empty_cache()
+
+        # create voxel representation
+        mesh = o3d.io.read_triangle_mesh(mesh_path)
+
+        # fit to unit cube
+        mesh.scale(
+            1 / np.max(mesh.get_max_bound() - mesh.get_min_bound()),
+            center=mesh.get_center(),
+        )
+
+        voxel_grid = o3d.geometry.VoxelGrid.create_from_triangle_mesh(
+            mesh,
+            voxel_size=0.05,
+        )
+
+        coo = np.array([voxel.grid_index for voxel in voxel_grid.get_voxels()])
+        voxels = np.zeros((2, 32, 32, 32))
+        voxels[0, :] = 1
+        voxels[:, coo[:, 0], coo[:, 1], coo[:, 2]] = np.array([0, 1])[:, None]
+
+        # save voxels
+        voxels = torch.tensor(voxels)
+        torch.save(voxels, str(obj_path / "voxels.pt"))
 
         # create scan folder
         scans_folder = obj_path / "scans"
