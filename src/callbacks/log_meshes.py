@@ -33,25 +33,24 @@ class LogMeshesCallback(Callback):
         if isinstance(logger, WandbLogger):
             wandb.log(
                 {
-                    f"reconstructions_{i}": wandb.Object3D(
-                        StringIO(export_obj(mesh)),
-                        file_type="obj",
-                        caption=f"Object #{i}",
-                    )
-                    for i, mesh in enumerate(train_meshes)
+                    f"test_reconstructions": [
+                        wandb.Object3D(
+                            StringIO(export_obj(mesh)),
+                            file_type="obj",
+                            caption=f"Train Object #{i}",
+                        )
+                        for i, mesh in enumerate(train_meshes)
+                    ],
+                    f"val_reconstructions": [
+                        wandb.Object3D(
+                            StringIO(export_obj(mesh)),
+                            file_type="obj",
+                            caption=f"Val Object #{i}",
+                        )
+                        for i, mesh in enumerate(val_meshes)
+                    ],
                 },
             )
-
-            val_artifact = wandb.Artifact("val_reconstruction", type="validation")
-            for i, mesh in enumerate(val_meshes):
-                val_artifact.add(
-                    wandb.Object3D(
-                        StringIO(export_obj(mesh)),
-                        file_type="obj",
-                        caption=f"Val reconstruction #{i}",
-                    ),
-                    f"Val reconstruction #{i}",
-                )
 
         elif isinstance(logger, TensorBoardLogger):
             for i, mesh in enumerate(train_meshes):
