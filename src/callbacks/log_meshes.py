@@ -79,8 +79,6 @@ class LogMeshesCallback(Callback):
         unused=None,
     ):
         self.state["epochs"] += 1
-        if not model.train_shape:
-            return
 
         if self.state["epochs"] % self.log_every == 0:
 
