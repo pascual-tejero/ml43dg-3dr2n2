@@ -103,18 +103,21 @@ class ThreeDeeR2N2(pl.LightningModule):
 
     def training_step(self, batch: t.Dict[str, t.Any], batch_idx):
         x = batch["images"].permute(1, 0, 2, 3, 4)
-        print(f"(training_step)\tShape of X: {x.shape}")
         y = batch["label"]
+
         prediction = self.forward(x)
         train_loss = self.loss(prediction, y)
+
         self.log("train_loss", train_loss)
         return train_loss
 
     def validation_step(self, batch: t.Dict[str, t.Any], batch_idx):
         x = batch["images"].permute(1, 0, 2, 3, 4)
         y = batch["label"]
+
         prediction = self.forward(x)
         val_loss = self.loss(prediction, y)
+
         self.log("val_loss", val_loss)
         return val_loss
 

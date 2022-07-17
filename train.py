@@ -63,8 +63,8 @@ def train_loop(
 
     # Create logger
     if config.logger_type == "wandb":
-        wandb.init(project="CNPM")
-        logger = pl_loggers.WandbLogger(project="CNPM", log_model="all")
+        wandb.init(project="ml43d-project/3dr2n2")
+        logger = pl_loggers.WandbLogger(project="ml43d-project/3dr2n2", log_model="all")
         logger.watch(model)
     elif config.logger_type == "tensorboard":
         logger = pl_loggers.TensorBoardLogger(save_dir=config.logging_path)
