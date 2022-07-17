@@ -142,9 +142,9 @@ class LogMeshesCallback(Callback):
             # and log to all loggers we have
             if isinstance(trainer.logger, LoggerCollection):
                 for logger in trainer.logger:
-                    self._log_mesh(logger, meshes, model)
+                    self._log_mesh(logger, train_meshes, val_meshes, model)
             else:
-                self._log_mesh(trainer.logger, meshes, model)
+                self._log_mesh(trainer.logger, train_meshes, val_meshes, model)
 
     def on_load_checkpoint(self, trainer, pl_module, callback_state):
         self.state.update(callback_state)
