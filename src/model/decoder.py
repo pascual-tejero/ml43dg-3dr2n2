@@ -1,31 +1,88 @@
 import torch
 import torch.nn as nn
+
 from .layers import Unpool3DLayer
+
 
 class Decoder(nn.Module):
     def __init__(self, type):
         super(Decoder, self).__init__()
         self.type = type
         n_deconvfilter = [128, 128, 128, 64, 32, 2]
-        self.conv7a = nn.Conv3d(in_channels=n_deconvfilter[0], out_channels=n_deconvfilter[1],kernel_size=(3,3,3),padding=1)
-        self.conv8a = nn.Conv3d(in_channels=n_deconvfilter[1], out_channels=n_deconvfilter[2], kernel_size=(3,3,3), padding=1)
-        self.conv9a = nn.Conv3d(in_channels=n_deconvfilter[2], out_channels=n_deconvfilter[3], kernel_size=(3,3,3), padding=1)
-        self.conv10a = nn.Conv3d(in_channels=n_deconvfilter[3], out_channels=n_deconvfilter[4], kernel_size=(3,3,3), padding=1)
-        self.conv11 = nn.Conv3d(in_channels=n_deconvfilter[4], out_channels=n_deconvfilter[5], kernel_size=(3,3,3), padding=1)
+        self.conv7a = nn.Conv3d(
+            in_channels=n_deconvfilter[0],
+            out_channels=n_deconvfilter[1],
+            kernel_size=(3, 3, 3),
+            padding=1,
+        )
+        self.conv8a = nn.Conv3d(
+            in_channels=n_deconvfilter[1],
+            out_channels=n_deconvfilter[2],
+            kernel_size=(3, 3, 3),
+            padding=1,
+        )
+        self.conv9a = nn.Conv3d(
+            in_channels=n_deconvfilter[2],
+            out_channels=n_deconvfilter[3],
+            kernel_size=(3, 3, 3),
+            padding=1,
+        )
+        self.conv10a = nn.Conv3d(
+            in_channels=n_deconvfilter[3],
+            out_channels=n_deconvfilter[4],
+            kernel_size=(3, 3, 3),
+            padding=1,
+        )
+        self.conv11 = nn.Conv3d(
+            in_channels=n_deconvfilter[4],
+            out_channels=n_deconvfilter[5],
+            kernel_size=(3, 3, 3),
+            padding=1,
+        )
 
         self.unpool3d = Unpool3DLayer()
         self.leakyReLU = nn.LeakyReLU()
 
         if self.type == "residual":
-            self.conv7b = nn.Conv3d(in_channels=n_deconvfilter[1], out_channels=n_deconvfilter[1],kernel_size=(3, 3, 3), padding=1)
-            self.conv8b = nn.Conv3d(in_channels=n_deconvfilter[2], out_channels=n_deconvfilter[2],kernel_size=(3, 3, 3), padding=1)
-            self.conv9b = nn.Conv3d(in_channels=n_deconvfilter[3], out_channels=n_deconvfilter[3], kernel_size=(3, 3, 3), padding=1)
-            self.conv9c = nn.Conv3d(in_channels=n_deconvfilter[2], out_channels=n_deconvfilter[3], kernel_size=(1, 1, 1), padding=0)
-            self.conv10b = nn.Conv3d(in_channels=n_deconvfilter[4], out_channels=n_deconvfilter[4], kernel_size=(3,3,3), padding=1)
-            self.conv10c = nn.Conv3d(in_channels=n_deconvfilter[4], out_channels=n_deconvfilter[4], kernel_size=(3,3,3), padding=1)
+            self.conv7b = nn.Conv3d(
+                in_channels=n_deconvfilter[1],
+                out_channels=n_deconvfilter[1],
+                kernel_size=(3, 3, 3),
+                padding=1,
+            )
+            self.conv8b = nn.Conv3d(
+                in_channels=n_deconvfilter[2],
+                out_channels=n_deconvfilter[2],
+                kernel_size=(3, 3, 3),
+                padding=1,
+            )
+            self.conv9b = nn.Conv3d(
+                in_channels=n_deconvfilter[3],
+                out_channels=n_deconvfilter[3],
+                kernel_size=(3, 3, 3),
+                padding=1,
+            )
+            self.conv9c = nn.Conv3d(
+                in_channels=n_deconvfilter[2],
+                out_channels=n_deconvfilter[3],
+                kernel_size=(1, 1, 1),
+                padding=0,
+            )
+            self.conv10b = nn.Conv3d(
+                in_channels=n_deconvfilter[4],
+                out_channels=n_deconvfilter[4],
+                kernel_size=(3, 3, 3),
+                padding=1,
+            )
+            self.conv10c = nn.Conv3d(
+                in_channels=n_deconvfilter[4],
+                out_channels=n_deconvfilter[4],
+                kernel_size=(3, 3, 3),
+                padding=1,
+            )
 
     def forward(self, x_in):
-        if self.type == 'simple':
+        if self.type == "simple":
             x = self.unpool3d(x_in)
             x = self.conv7a(x)
             x = self.leakyReLU(x)

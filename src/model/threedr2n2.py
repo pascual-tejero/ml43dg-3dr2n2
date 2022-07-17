@@ -1,22 +1,24 @@
-import torch.nn as nn
 import typing as t
-import torch
-from .utils import initialize_tensor
-from .encoder import Encoder
-from .decoder import Decoder
-from .convRNN3D import ConvGRU3D
-from .loss import SoftmaxWithLoss3D
+
 import pytorch_lightning as pl
+import torch
+import torch.nn as nn
+
+from .convRNN3D import ConvGRU3D
+from .decoder import Decoder
+from .encoder import Encoder
+from .loss import SoftmaxWithLoss3D
+from .utils import initialize_tensor
 
 
 class ThreeDeeR2N2(pl.LightningModule):
     def __init__(
-            self,
-            encoder_decoder_type: str,
-            convRNN3D_type: str,
-            convRNN3D_kernel_size: int,
-            batch_size: int,
-            learning_rate: float = 0.001
+        self,
+        encoder_decoder_type: str,
+        convRNN3D_type: str,
+        convRNN3D_kernel_size: int,
+        batch_size: int,
+        learning_rate: float = 0.001,
     ):
         super(ThreeDeeR2N2, self).__init__()
         self.batch_size = batch_size
@@ -27,7 +29,11 @@ class ThreeDeeR2N2(pl.LightningModule):
         self.grid_convRNN3D = 4
         self.hidden_size = 128
         self.h_shape = (
-            self.batch_size, self.hidden_size, self.grid_convRNN3D, self.grid_convRNN3D, self.grid_convRNN3D
+            self.batch_size,
+            self.hidden_size,
+            self.grid_convRNN3D,
+            self.grid_convRNN3D,
+            self.grid_convRNN3D,
         )
 
         self.encoder, self.decoder, self.convRNN3D = None, None, None
@@ -39,26 +45,26 @@ class ThreeDeeR2N2(pl.LightningModule):
         self.loss = SoftmaxWithLoss3D()
 
     def initialize_encoder(self, type):
-        if type.lower() not in ['simple', 'residual']:
+        if type.lower() not in ["simple", "residual"]:
             raise Exception("Type Error: Encoder")
         self.encoder = Encoder(type.lower())
 
     def initialize_decoder(self, type):
-        if type.lower() not in ['simple', 'residual']:
+        if type.lower() not in ["simple", "residual"]:
             raise Exception("Type Error: Decoder")
         self.decoder = Decoder(type.lower())
 
     def initialize_convRNN3d(self, type, kernel_size):
-        if type.lower() not in ['lstm', 'gru']:
+        if type.lower() not in ["lstm", "gru"]:
             raise Exception("Type Error: 3D Convolutional RNN")
         if kernel_size not in [1, 3]:
             raise Exception("Value Error: Kernel size of 3D Convolutional RNN")
-        if type == 'gru':
+        if type == "gru":
             self.convRNN3D = ConvGRU3D(
                 fan_in=1024,
                 hidden_size=self.hidden_size,
                 grid_size=self.grid_convRNN3D,
-                kernel_size=kernel_size
+                kernel_size=kernel_size,
             )
         else:
             self.convRNN3D = None
@@ -96,27 +102,27 @@ class ThreeDeeR2N2(pl.LightningModule):
         return optimizer
 
     def training_step(self, batch: t.Dict[str, t.Any], batch_idx):
-        x = batch['images'].permute(1, 0, 2, 3, 4)
+        x = batch["images"].permute(1, 0, 2, 3, 4)
         print(f"(training_step)\tShape of X: {x.shape}")
-        y = batch['label']
+        y = batch["label"]
         prediction = self.forward(x)
         train_loss = self.loss(prediction, y)
-        self.log('train_loss', train_loss)
+        self.log("train_loss", train_loss)
         return train_loss
 
-    def validation_step(self,  batch: t.Dict[str, t.Any], batch_idx):
-        x = batch['images'].permute(1, 0, 2, 3, 4)
-        y = batch['label']
+    def validation_step(self, batch: t.Dict[str, t.Any], batch_idx):
+        x = batch["images"].permute(1, 0, 2, 3, 4)
+        y = batch["label"]
         prediction = self.forward(x)
         val_loss = self.loss(prediction, y)
-        self.log('val_loss', val_loss)
+        self.log("val_loss", val_loss)
         return val_loss
 
     def transfer_batch_to_device(
-            self,
-            batch: t.Dict[str, t.Any],
-            device: torch.device,
-            dataloader_idx: int,
+        self,
+        batch: t.Dict[str, t.Any],
+        device: torch.device,
+        dataloader_idx: int,
     ) -> t.Dict[str, torch.Tensor]:
         batch["images"] = batch["images"].to(device)
         batch["label"] = batch["label"].to(device)

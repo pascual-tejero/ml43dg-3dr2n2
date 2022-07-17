@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
+
 from .layers import GRUGate3D
+
 
 class ConvGRU3D(nn.Module):
     def __init__(self, fan_in, hidden_size, grid_size, kernel_size):
@@ -9,8 +11,20 @@ class ConvGRU3D(nn.Module):
         self.hidden_size = hidden_size
         self.grid_size = grid_size
         self.kernel_size = kernel_size
-        filter_params = (hidden_size, hidden_size, kernel_size, kernel_size, kernel_size)
-        output_shape = (-1, self.hidden_size, self.grid_size, self.grid_size, self.grid_size)
+        filter_params = (
+            hidden_size,
+            hidden_size,
+            kernel_size,
+            kernel_size,
+            kernel_size,
+        )
+        output_shape = (
+            -1,
+            self.hidden_size,
+            self.grid_size,
+            self.grid_size,
+            self.grid_size,
+        )
 
         self.update = GRUGate3D(self.fan_in, filter_params, output_shape)
         self.reset = GRUGate3D(self.fan_in, filter_params, output_shape)

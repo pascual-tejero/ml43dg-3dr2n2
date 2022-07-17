@@ -2,11 +2,12 @@ import typing as t
 from pathlib import Path
 
 import numpy as np
+import PIL.Image as Image
 import pytorch_lightning as pl
 import torch
 import torchvision.transforms.functional as TF
 import trimesh
-import PIL.Image as Image
+
 # from pytorch3d.renderer import FoVPerspectiveCameras, look_at_view_transform
 from torch.utils.data import DataLoader, Dataset
 from torchvision.transforms.functional import adjust_hue
@@ -18,10 +19,10 @@ class ColoredShapeNet(Dataset):
     """
 
     def __init__(
-            self,
-            dataset_path: str,
-            num_renders: int,
-            split: t.Optional[str] = None,
+        self,
+        dataset_path: str,
+        num_renders: int,
+        split: t.Optional[str] = None,
     ):
         """
         :@param num_sample_points: number of points to sample for sdf values per shape
@@ -52,8 +53,7 @@ class ColoredShapeNet(Dataset):
 
         # cameras, images, voxels, silhouettes, depth_maps, _, _, _ = self.get_renders(shape_name)
         images, voxels, silhouettes, depth_maps, _, _, _ = self.get_renders(
-            shape_name,
-            renders_idx=list(range(5))
+            shape_name, renders_idx=list(range(5))
         )
 
         sample = {
@@ -81,7 +81,7 @@ class ColoredShapeNet(Dataset):
 
     @staticmethod
     def hue_shift(
-            colors: torch.Tensor, index: int, num_color_shifts: int
+        colors: torch.Tensor, index: int, num_color_shifts: int
     ) -> torch.Tensor:
         color_idx = index % num_color_shifts
 
@@ -100,9 +100,9 @@ class ColoredShapeNet(Dataset):
         return colors
 
     def get_renders(
-            self,
-            shape_id: str,
-            renders_idx: t.Optional[t.List[int]] = None,
+        self,
+        shape_id: str,
+        renders_idx: t.Optional[t.List[int]] = None,
     ) -> t.Tuple[
         # FoVPerspectiveCameras,
         torch.Tensor,
@@ -169,7 +169,6 @@ class ColoredShapeNet(Dataset):
         # return cameras, images, voxels, silhouettes, depth_maps, elev, azim, dists
         return images, voxels, silhouettes, depth_maps, elev, azim, dists
 
-
     def get_mesh(self, shape_id):
         """
         Loading a mesh from the shape with identifier
@@ -219,14 +218,14 @@ class ShapeNetDataModule(pl.LightningDataModule):
     val_dataset: EmptyDataset
 
     def __init__(
-            self,
-            batch_size: int,
-            num_workers: int,
-            *,
-            num_renders: int = 100,
-            train_split: str,
-            val_split: str,
-            path_to_dataset: str,
+        self,
+        batch_size: int,
+        num_workers: int,
+        *,
+        num_renders: int = 100,
+        train_split: str,
+        val_split: str,
+        path_to_dataset: str,
     ):
         super().__init__()
 

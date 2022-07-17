@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 class SoftmaxWithLoss3D(nn.Module):
     def __init__(self):
         super(SoftmaxWithLoss3D, self).__init__()
@@ -22,6 +23,6 @@ class SoftmaxWithLoss3D(nn.Module):
 
         # if the ground truth is provided the loss will be computed
         loss = torch.mean(
-            torch.sum(-y_true * adj_inputs, dim=1, keepdim=True) + \
-            torch.log(sum_exp_x))
+            torch.sum(-y_true * adj_inputs, dim=1, keepdim=True) + torch.log(sum_exp_x)
+        )
         return loss

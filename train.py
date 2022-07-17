@@ -1,9 +1,10 @@
 import argparse
-import wandb
 import typing as t
-from pytorch_lightning import loggers as pl_loggers, Trainer
 from configparser import ConfigParser
 
+import wandb
+from pytorch_lightning import Trainer
+from pytorch_lightning import loggers as pl_loggers
 from pytorch_lightning import seed_everything
 
 from src.configuration.config import TrainConfig
@@ -11,7 +12,9 @@ from src.data.shapenet import ShapeNetDataModule
 from src.model.threedr2n2 import ThreeDeeR2N2
 
 
-def train_loop(config: TrainConfig, resume_from: t.Optional[str], run_id: t.Optional[str]) -> None:
+def train_loop(
+    config: TrainConfig, resume_from: t.Optional[str], run_id: t.Optional[str]
+) -> None:
     # Create DataModule
     datamodule = ShapeNetDataModule(
         batch_size=config.batch_size,
@@ -19,7 +22,7 @@ def train_loop(config: TrainConfig, resume_from: t.Optional[str], run_id: t.Opti
         num_renders=config.num_renders,
         train_split=config.train_split,
         val_split=config.val_split,
-        path_to_dataset=config.path_to_dataset
+        path_to_dataset=config.path_to_dataset,
     )
     datamodule.setup()
 
@@ -61,7 +64,7 @@ if __name__ == "__main__":
         "--config",
         type=str,
         help="Path to config file",
-        default="./src/configuration/train.ini"
+        default="./src/configuration/train.ini",
     )
     parser.add_argument(
         "--resume_from",

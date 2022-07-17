@@ -1,34 +1,110 @@
-import torch.nn as nn
 import numpy as np
+import torch.nn as nn
+
 
 class Encoder(nn.Module):
     def __init__(self, type):
         super(Encoder, self).__init__()
         self.type = type
         n_convfilter = [96, 128, 256, 256, 256, 256]
-        self.conv1a = nn.Conv2d(in_channels=3, out_channels=n_convfilter[0], kernel_size=7, padding=3)
-        self.conv2a = nn.Conv2d(in_channels=n_convfilter[0], out_channels=n_convfilter[1], kernel_size=3, padding=1)
-        self.conv3a = nn.Conv2d(in_channels=n_convfilter[1], out_channels=n_convfilter[2], kernel_size=3, padding=1)
-        self.conv4a = nn.Conv2d(in_channels=n_convfilter[2], out_channels=n_convfilter[3], kernel_size=3, padding=1)
-        self.conv5a = nn.Conv2d(in_channels=n_convfilter[3], out_channels=n_convfilter[4], kernel_size=3, padding=1)
-        self.conv6a = nn.Conv2d(in_channels=n_convfilter[4], out_channels=n_convfilter[5], kernel_size=3, padding=1)
-        if self.type == 'residual':
-            self.conv1b = nn.Conv2d(in_channels=n_convfilter[0], out_channels=n_convfilter[0], kernel_size=3, padding=1)
-            self.conv2b = nn.Conv2d(in_channels=n_convfilter[1], out_channels=n_convfilter[1], kernel_size=3, padding=1)
-            self.conv2c = nn.Conv2d(in_channels=n_convfilter[0], out_channels=n_convfilter[1], kernel_size=1, padding=0)
-            self.conv3b = nn.Conv2d(in_channels=n_convfilter[2], out_channels=n_convfilter[2], kernel_size=3, padding=1)
-            self.conv3c = nn.Conv2d(in_channels=n_convfilter[1], out_channels=n_convfilter[2], kernel_size=1, padding=0)
-            self.conv4b = nn.Conv2d(in_channels=n_convfilter[3], out_channels=n_convfilter[3], kernel_size=3, padding=1)
-            self.conv5b = nn.Conv2d(in_channels=n_convfilter[4], out_channels=n_convfilter[4], kernel_size=3, padding=1)
-            self.conv5c = nn.Conv2d(in_channels=n_convfilter[3], out_channels=n_convfilter[4], kernel_size=1, padding=0)
-            self.conv6b = nn.Conv2d(in_channels=n_convfilter[5], out_channels=n_convfilter[5], kernel_size=3, padding=1)
-        self.fc = nn.Linear(in_features=n_convfilter[5]*(self.get_spatial_dim(input_spatial_dim=127,num_pooling=6)**2), out_features=1024)
+        self.conv1a = nn.Conv2d(
+            in_channels=3, out_channels=n_convfilter[0], kernel_size=7, padding=3
+        )
+        self.conv2a = nn.Conv2d(
+            in_channels=n_convfilter[0],
+            out_channels=n_convfilter[1],
+            kernel_size=3,
+            padding=1,
+        )
+        self.conv3a = nn.Conv2d(
+            in_channels=n_convfilter[1],
+            out_channels=n_convfilter[2],
+            kernel_size=3,
+            padding=1,
+        )
+        self.conv4a = nn.Conv2d(
+            in_channels=n_convfilter[2],
+            out_channels=n_convfilter[3],
+            kernel_size=3,
+            padding=1,
+        )
+        self.conv5a = nn.Conv2d(
+            in_channels=n_convfilter[3],
+            out_channels=n_convfilter[4],
+            kernel_size=3,
+            padding=1,
+        )
+        self.conv6a = nn.Conv2d(
+            in_channels=n_convfilter[4],
+            out_channels=n_convfilter[5],
+            kernel_size=3,
+            padding=1,
+        )
+        if self.type == "residual":
+            self.conv1b = nn.Conv2d(
+                in_channels=n_convfilter[0],
+                out_channels=n_convfilter[0],
+                kernel_size=3,
+                padding=1,
+            )
+            self.conv2b = nn.Conv2d(
+                in_channels=n_convfilter[1],
+                out_channels=n_convfilter[1],
+                kernel_size=3,
+                padding=1,
+            )
+            self.conv2c = nn.Conv2d(
+                in_channels=n_convfilter[0],
+                out_channels=n_convfilter[1],
+                kernel_size=1,
+                padding=0,
+            )
+            self.conv3b = nn.Conv2d(
+                in_channels=n_convfilter[2],
+                out_channels=n_convfilter[2],
+                kernel_size=3,
+                padding=1,
+            )
+            self.conv3c = nn.Conv2d(
+                in_channels=n_convfilter[1],
+                out_channels=n_convfilter[2],
+                kernel_size=1,
+                padding=0,
+            )
+            self.conv4b = nn.Conv2d(
+                in_channels=n_convfilter[3],
+                out_channels=n_convfilter[3],
+                kernel_size=3,
+                padding=1,
+            )
+            self.conv5b = nn.Conv2d(
+                in_channels=n_convfilter[4],
+                out_channels=n_convfilter[4],
+                kernel_size=3,
+                padding=1,
+            )
+            self.conv5c = nn.Conv2d(
+                in_channels=n_convfilter[3],
+                out_channels=n_convfilter[4],
+                kernel_size=1,
+                padding=0,
+            )
+            self.conv6b = nn.Conv2d(
+                in_channels=n_convfilter[5],
+                out_channels=n_convfilter[5],
+                kernel_size=3,
+                padding=1,
+            )
+        self.fc = nn.Linear(
+            in_features=n_convfilter[5]
+            * (self.get_spatial_dim(input_spatial_dim=127, num_pooling=6) ** 2),
+            out_features=1024,
+        )
         self.pool = nn.MaxPool2d(kernel_size=2, padding=1)
         self.leakyReLU = nn.LeakyReLU()
 
-
     def forward(self, x_in):
-        if self.type == 'simple':
+        if self.type == "simple":
             x = self.conv1a(x_in)
             x = self.pool(x)
             x = self.leakyReLU(x)
@@ -106,5 +182,5 @@ class Encoder(nn.Module):
         padding = 1
         spatial_dim = input_spatial_dim
         for i in range(num_pooling):
-            spatial_dim = np.floor((spatial_dim - kernel_size + 2*padding)/2 + 1)
+            spatial_dim = np.floor((spatial_dim - kernel_size + 2 * padding) / 2 + 1)
         return int(spatial_dim)
