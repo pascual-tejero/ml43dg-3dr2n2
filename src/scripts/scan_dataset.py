@@ -161,11 +161,15 @@ if __name__ == "__main__":
         for model_id in ids
     ]
 
-    with Pool(args.num_thread) as pool:
-        results = list(
-            tqdm(
-                pool.imap_unordered(scan_sample, inputs),
-                total=len(inputs),
-                desc="Scanning obj files: ",
+    if args.num_thread > 1:
+        with Pool(args.num_thread) as pool:
+            results = list(
+                tqdm(
+                    pool.imap_unordered(scan_sample, inputs),
+                    total=len(inputs),
+                    desc="Scanning obj files: ",
+                )
             )
-        )
+    else:
+        for i in tqdm(inputs):
+            scan_sample(i)
