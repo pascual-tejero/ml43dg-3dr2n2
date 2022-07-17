@@ -103,7 +103,7 @@ class LogMeshesCallback(Callback):
 
                 with torch.no_grad():
                     batch_pred = model.forward(images)
-                    batch_meshes = cubify(batch_pred[:, 1])
+                    batch_meshes = cubify(batch_pred[:, 1], thresh=0.5)
 
                 train_meshes.extend(
                     [
@@ -124,7 +124,7 @@ class LogMeshesCallback(Callback):
 
                 with torch.no_grad():
                     batch_pred = model.forward(images)
-                    batch_meshes = cubify(batch_pred[:, 1])
+                    batch_meshes = cubify(batch_pred[:, 1], thresh=0.5)
 
                 val_meshes.extend(
                     [
