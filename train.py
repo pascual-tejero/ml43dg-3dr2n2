@@ -39,7 +39,9 @@ def parse_arguments(parser):
 
 
 def train_loop(
-    config: TrainConfig, resume_from: t.Optional[str] = None, run_id: t.Optional[str] = None
+    config: TrainConfig,
+    resume_from: t.Optional[str] = None,
+    run_id: t.Optional[str] = None
 ) -> None:
     # Create DataModule
     datamodule = ShapeNetDataModule(
