@@ -39,7 +39,7 @@ def parse_arguments(parser):
 
 
 def train_loop(
-    config: TrainConfig, resume_from: t.Optional[str], run_id: t.Optional[str]
+    config: TrainConfig, resume_from: t.Optional[str] = None, run_id: t.Optional[str] = None
 ) -> None:
     # Create DataModule
     datamodule = ShapeNetDataModule(
@@ -63,7 +63,7 @@ def train_loop(
 
     # Create logger
     if config.logger_type == "wandb":
-        wandb.init(project="3dr2n2", entity='ml43d-project')
+        wandb.init(project="3dr2n2", id=run_id, entity='ml43d-project')
         logger = pl_loggers.WandbLogger(project="3dr2n2", log_model="all")
         logger.watch(model)
     elif config.logger_type == "tensorboard":
@@ -81,11 +81,10 @@ def train_loop(
         callbacks=[
             LogMeshesCallback(log_every=config.validate_every_n),
             LogModelWightsCallback(log_every=config.validate_every_n),
-        ]
-        # resume_from_checkpoint=resume_from,
+        ],
         # accumulate_grad_batches=config.accumulate_grad_batches,
     )
-    trainer.fit(model, datamodule=datamodule)
+    trainer.fit(model, datamodule=datamodule, ckpt_path=resume_from)
 
 
 if __name__ == "__main__":
@@ -101,7 +100,7 @@ if __name__ == "__main__":
         nargs="?",
         type=str,
         help="path to resume model",
-        default="",
+        default=None,
     )
     parser.add_argument(
         "--seed",
@@ -115,7 +114,7 @@ if __name__ == "__main__":
         nargs="?",
         type=str,
         help="wandb run id",
-        default="",
+        default=None,
     )
     args = parse_arguments(parser)
 
