@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "ml43d-3dr2n2"
+version = "0.1.0"
+description = ""
+authors = ["ewriji <ewriji@airlab.team>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+torch = "^1.11.0"
+torchvision = "^0.12.0"
+torchaudio = "^0.11.0"
+open3d = "^0.15.2"
+trimesh = "^3.12.9"
+matplotlib = "^3.5.2"
+scikit-image = "^0.19.3"
+tqdm = "^4.64.0"
+pydantic = "^1.9.1"
+plotly = "^5.9.0"
+wandb = "^0.12.21"
+pandas = "^1.4.3"
+scikit-learn = "^1.1.1"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
