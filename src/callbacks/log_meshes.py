@@ -132,7 +132,7 @@ class LogMeshesCallback(Callback):
         if isinstance(logger, WandbLogger):
             self._log_to_wandb(
                 train_meshes=train_meshes,
-                target_train_meshe=target_train_meshes,
+                target_train_meshes=target_train_meshes,
                 val_meshes=val_meshes,
                 target_val_meshes=target_val_meshes,
             )
