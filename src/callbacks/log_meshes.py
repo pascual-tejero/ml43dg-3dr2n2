@@ -81,7 +81,7 @@ class LogMeshesCallback(Callback):
         wandb.log(log_data)
 
         # Save val evaluations as artifacts
-        artifact = wandb.Artifact(f"Eval reconstructions", type="evaluation")
+        artifact = wandb.Artifact(f"eval_reconstructions", type="evaluation")
 
         tmp_folder = Path("tmp_artifacts")
         tmp_folder.mkdir(parents=True, exist_ok=True)
