@@ -59,11 +59,10 @@ class ColoredShapeNet(Dataset):
         sample = {
             "name": shape_name,  # identifier of the shape
             "index": index,  # index parameter
+            # ↓ [2, 36, 36, 36]
             "label": voxels,
             # ↓ [num_renders, img_width, img_height, 3]
             "images": images,
-            # ↓ [num_renders]
-            # "cameras": cameras,
             # ↓ [num_renders, img_width, img_height, 1]
             "silhouettes": silhouettes,
             # ↓ [num_renders, img_width, img_height, 1]

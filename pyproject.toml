@@ -6,10 +6,6 @@ authors = ["ewriji <ewriji@airlab.team>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-torch = "^1.11.0"
-torchvision = "^0.12.0"
-torchaudio = "^0.11.0"
-open3d = "^0.15.2"
 trimesh = "^3.12.9"
 matplotlib = "^3.5.2"
 scikit-image = "^0.19.3"
@@ -19,6 +15,11 @@ plotly = "^5.9.0"
 wandb = "^0.12.21"
 pandas = "^1.4.3"
 scikit-learn = "^1.1.1"
+torch = "^1.12.0"
+torchvision = "^0.13.0"
+torchaudio = "^0.12.0"
+pytorch3d = "^0.6.2"
+pytorch-lightning = "^1.6.5"
 
 [tool.poetry.dev-dependencies]
 

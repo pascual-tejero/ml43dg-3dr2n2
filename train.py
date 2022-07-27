@@ -41,7 +41,7 @@ def parse_arguments(parser):
 def train_loop(
     config: TrainConfig,
     resume_from: t.Optional[str] = None,
-    run_id: t.Optional[str] = None
+    run_id: t.Optional[str] = None,
 ) -> None:
     # Create DataModule
     datamodule = ShapeNetDataModule(
@@ -65,7 +65,7 @@ def train_loop(
 
     # Create logger
     if config.logger_type == "wandb":
-        wandb.init(project="3dr2n2", id=run_id, entity='ml43d-project')
+        wandb.init(project="3dr2n2", id=run_id, entity="ml43d-project")
         logger = pl_loggers.WandbLogger(project="3dr2n2", log_model="all")
         logger.watch(model)
     elif config.logger_type == "tensorboard":
