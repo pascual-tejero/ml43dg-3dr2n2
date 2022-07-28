@@ -85,7 +85,7 @@ def train_loop(
             LogMeshesCallback(log_every=config.validate_every_n),
             LogModelWightsCallback(log_every=config.validate_every_n),
         ],
-        # accumulate_grad_batches=config.accumulate_grad_batches,
+        accumulate_grad_batches=config.accumulate_grad_batches,
     )
     trainer.fit(model, datamodule=datamodule, ckpt_path=resume_from)
 
