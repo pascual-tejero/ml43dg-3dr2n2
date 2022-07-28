@@ -48,6 +48,7 @@ def train_loop(
         batch_size=config.batch_size,
         num_workers=config.num_workers,
         num_renders=config.num_renders,
+        random_renders=config.random_renders,
         train_split=config.train_split,
         val_split=config.val_split,
         path_to_dataset=config.path_to_dataset,

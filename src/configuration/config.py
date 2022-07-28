@@ -16,6 +16,7 @@ class TrainConfig(BaseModel):
 
     # Dataset
     num_renders: int
+    random_renders: bool
     path_to_dataset: str
     train_split: str
     val_split: str
