@@ -101,10 +101,9 @@ class LogMeshesCallback(Callback):
             artifact.add_file(
                 str(reconstruction_file),
                 name=f"{i}_val_reconstruction.obj",
-                is_tmp=True,
             )
             artifact.add_file(
-                str(target_file), name=f"{i}_val_target.obj", is_tmp=True
+                str(target_file), name=f"{i}_val_target.obj"
             )
 
         wandb.log_artifact(artifact)
