@@ -134,7 +134,7 @@ class ColoredShapeNet(Dataset):
             )
         else:
             step = len(scans_dirs) // self.num_renders
-            scans_dirs = [scans_dirs[i] for i in range(0, len(scans_dirs), step=step)]
+            scans_dirs = [scans_dirs[i] for i in range(0, len(scans_dirs), step)]
 
         elev = []
         azim = []
