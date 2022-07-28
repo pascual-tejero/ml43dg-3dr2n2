@@ -87,12 +87,25 @@ class LogMeshesCallback(Callback):
         tmp_folder = Path("tmp_artifacts")
         tmp_folder.mkdir(parents=True, exist_ok=True)
 
-        for i, obj_data in enumerate(val_obj_data):
-            file_name = tmp_folder / f"val_reconstruction_{i}.obj"
-            with open(file_name, "w") as obj_file:
+        for i, (obj_data, target_obj_data) in enumerate(
+            zip(val_obj_data, target_val_obj_data)
+        ):
+            reconstruction_file = tmp_folder / f"val_reconstruction_{i}.obj"
+            with open(reconstruction_file, "w") as obj_file:
                 obj_file.write(obj_data)
 
-            artifact.add_file(str(file_name), is_tmp=True)
+            target_file = tmp_folder / f"val_target_{i}.obj"
+            with open(target_file, "w") as obj_file:
+                obj_file.write(target_obj_data)
+
+            artifact.add_file(
+                str(reconstruction_file),
+                name=f"{i}_val_reconstruction.obj",
+                is_tmp=True,
+            )
+            artifact.add_file(
+                str(target_file), name=f"{i}_val_target.obj", is_tmp=True
+            )
 
         wandb.log_artifact(artifact)
 
