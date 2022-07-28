@@ -31,6 +31,7 @@ def scan_sample(input):
             dist,
             device_name,
             num_batch,
+            voxelize,
         ) = input
 
         device = torch.device(device_name)
@@ -55,28 +56,29 @@ def scan_sample(input):
         if device_name.startswith("cuda"):
             torch.cuda.empty_cache()
 
-        # create voxel representation
-        mesh = o3d.io.read_triangle_mesh(mesh_path)
+        if voxelize:
+            # create voxel representation
+            mesh = o3d.io.read_triangle_mesh(mesh_path)
 
-        # fit to unit cube
-        mesh.scale(
-            1 / np.max(mesh.get_max_bound() - mesh.get_min_bound()),
-            center=mesh.get_center(),
-        )
+            # fit to unit cube
+            mesh.scale(
+                1 / np.max(mesh.get_max_bound() - mesh.get_min_bound()),
+                center=mesh.get_center(),
+            )
 
-        voxel_grid = o3d.geometry.VoxelGrid.create_from_triangle_mesh(
-            mesh,
-            voxel_size=0.05,
-        )
+            voxel_grid = o3d.geometry.VoxelGrid.create_from_triangle_mesh(
+                mesh,
+                voxel_size=0.05,
+            )
 
-        coo = np.array([voxel.grid_index for voxel in voxel_grid.get_voxels()])
-        voxels = np.zeros((2, 32, 32, 32))
-        voxels[0, :] = 1
-        voxels[:, coo[:, 0], coo[:, 1], coo[:, 2]] = np.array([0, 1])[:, None]
+            coo = np.array([voxel.grid_index for voxel in voxel_grid.get_voxels()])
+            voxels = np.zeros((2, 32, 32, 32))
+            voxels[0, :] = 1
+            voxels[:, coo[:, 0], coo[:, 1], coo[:, 2]] = np.array([0, 1])[:, None]
 
-        # save voxels
-        voxels = torch.tensor(voxels)
-        torch.save(voxels, str(obj_path / "voxels.pt"))
+            # save voxels
+            voxels = torch.tensor(voxels)
+            torch.save(voxels, str(obj_path / "voxels.pt"))
 
         # create scan folder
         scans_folder = obj_path / "scans"
@@ -114,6 +116,9 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str, help="Path to dataset")
     parser.add_argument(
         "--num_scans", type=int, help="Number of scans per obj file.", default=100
+    )
+    parser.add_argument(
+        "--voxelize", type=bool, help="Wheatehr or not to create voxels", default=True
     )
     parser.add_argument(
         "--image_size", type=int, help="Size of scan image", default=128
@@ -157,6 +162,7 @@ if __name__ == "__main__":
             args.dist,
             args.device,
             args.num_batch,
+            args.voxelize,
         )
         for model_id in ids
     ]
