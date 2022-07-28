@@ -12,11 +12,6 @@ from tqdm import tqdm
 
 from src.utils.scan_obj import generate_renders
 
-try:
-    set_start_method("spawn", force=True)
-except Exception:
-    ...
-
 LOG_FILE = "./dataset_scan_log.txt"
 
 
@@ -168,6 +163,11 @@ if __name__ == "__main__":
     ]
 
     if args.num_thread > 1:
+        try:
+            set_start_method("spawn", force=True)
+        except Exception:
+            ...
+
         with Pool(args.num_thread) as pool:
             results = list(
                 tqdm(
