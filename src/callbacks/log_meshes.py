@@ -26,6 +26,7 @@ class LogMeshesCallback(Callback):
 
     def _log_to_wandb(
         self,
+        run_id: str,
         train_meshes: t.List[Trimesh],
         target_train_meshes: t.List[Trimesh],
         val_meshes: t.List[Trimesh],
@@ -81,7 +82,7 @@ class LogMeshesCallback(Callback):
         wandb.log(log_data)
 
         # Save val evaluations as artifacts
-        artifact = wandb.Artifact(f"eval_reconstructions", type="evaluation")
+        artifact = wandb.Artifact(f"eval_reconstructions_{run_id}", type="evaluation")
 
         tmp_folder = Path("tmp_artifacts")
         tmp_folder.mkdir(parents=True, exist_ok=True)
@@ -131,6 +132,7 @@ class LogMeshesCallback(Callback):
 
         if isinstance(logger, WandbLogger):
             self._log_to_wandb(
+                run_id=logger.experiment.id,
                 train_meshes=train_meshes,
                 target_train_meshes=target_train_meshes,
                 val_meshes=val_meshes,
