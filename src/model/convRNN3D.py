@@ -60,14 +60,15 @@ class ConvLSTM3D(nn.Module):
     # Implementation of 3D Convolutional LSTM grid according to the 3DR2N2 paper.
     # Input - feature vector (B, C), previous hidden state (B, Nh, N, N, N)
     # Output - (B, Nh, N, N, N)
-    def __init__(self,
-                 feature_vector_length,
-                 hidden_layer_length,
-                 grid_size=4,
-                 kernel_size=3,
-                 stride=1,
-                 padding=1
-                 ):
+    def __init__(
+        self,
+        feature_vector_length,
+        hidden_layer_length,
+        grid_size=4,
+        kernel_size=3,
+        stride=1,
+        padding=1,
+    ):
         super(ConvLSTM3D, self).__init__()
 
         self.feature_vector_length = feature_vector_length
@@ -79,12 +80,17 @@ class ConvLSTM3D(nn.Module):
         gate_channels = 3 * self.hidden_layer_length
         self.gate_channels = gate_channels
 
-        self.linear = nn.Linear(feature_vector_length,
-                                gate_channels * grid_size * grid_size * grid_size)
-        self.conv3d = nn.Conv3d(in_channels=hidden_layer_length,
-                                out_channels=gate_channels,
-                                kernel_size=(kernel_size, kernel_size, kernel_size),
-                                stride=1, padding=1, bias=True)
+        self.linear = nn.Linear(
+            feature_vector_length, gate_channels * grid_size * grid_size * grid_size
+        )
+        self.conv3d = nn.Conv3d(
+            in_channels=hidden_layer_length,
+            out_channels=gate_channels,
+            kernel_size=(kernel_size, kernel_size, kernel_size),
+            stride=1,
+            padding=1,
+            bias=True,
+        )
 
         self.reset_parameters()
 
@@ -94,8 +100,9 @@ class ConvLSTM3D(nn.Module):
 
     def forward(self, input, hidden):
         hx, cx = hidden
-        gates = self.linear(input).view(-1, self.gate_channels, self.grid_size, self.grid_size, self.grid_size) \
-                + self.conv3d(hx)
+        gates = self.linear(input).view(
+            -1, self.gate_channels, self.grid_size, self.grid_size, self.grid_size
+        ) + self.conv3d(hx)
         ingate, forgetgate, cellgate = gates.chunk(3, 1)
         ingate = torch.sigmoid(ingate)
         forgetgate = torch.sigmoid(forgetgate)

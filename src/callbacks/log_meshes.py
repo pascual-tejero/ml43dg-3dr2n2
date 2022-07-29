@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytorch_lightning as pl
 import torch
+import torch.nn.functional as F
 import wandb
 from pytorch3d.ops import cubify
 from pytorch3d.structures.meshes import Meshes
@@ -12,7 +13,6 @@ from pytorch_lightning.loggers import LoggerCollection, TensorBoardLogger, Wandb
 from torch.utils.data import DataLoader, Subset
 from trimesh import Trimesh
 from trimesh.exchange.obj import export_obj
-import torch.nn.functional as F
 
 from src.model.threedr2n2 import ThreeDeeR2N2
 
@@ -103,9 +103,7 @@ class LogMeshesCallback(Callback):
                 str(reconstruction_file),
                 name=f"{i}_val_reconstruction.obj",
             )
-            artifact.add_file(
-                str(target_file), name=f"{i}_val_target.obj"
-            )
+            artifact.add_file(str(target_file), name=f"{i}_val_target.obj")
 
         wandb.log_artifact(artifact)
 

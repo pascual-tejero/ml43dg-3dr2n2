@@ -32,7 +32,9 @@ class LogModelWightsCallback(Callback):
         # log model to W&B
         if isinstance(logger, WandbLogger):
             artifact = wandb.Artifact(
-                "model", type="model", description=self.model_description
+                f"model-{logger.experiment.id}",
+                type="model",
+                description=self.model_description,
             )
             artifact.add_file(model_ckpt)
 

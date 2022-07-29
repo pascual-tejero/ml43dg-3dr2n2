@@ -20,7 +20,7 @@ class SoftmaxWithLoss3D(nn.Module):
         y_true must be a tensor that has the same dimensions as the input. For each
         channel, only one element is one indicating the ground truth prediction
         label.
-       """
+        """
         max_channel = torch.max(y_pred, dim=1, keepdim=True)[0]
         adj_inputs = y_pred - max_channel
         exp_x = torch.exp(adj_inputs)
