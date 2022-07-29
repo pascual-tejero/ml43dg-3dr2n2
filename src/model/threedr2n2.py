@@ -32,7 +32,7 @@ class ThreeDeeR2N2(pl.LightningModule):
             self.grid_convRNN3D,
             self.grid_convRNN3D,
             self.grid_convRNN3D,
-        )
+        ) # Include batch size in forward pass
 
         self.encoder, self.decoder, self.convRNN3D = None, None, None
 
@@ -75,7 +75,8 @@ class ThreeDeeR2N2(pl.LightningModule):
         if self.decoder is None:
             raise Exception("The decoder is not initialized!")
 
-        h, u = initialize_tensor(self.h_shape), initialize_tensor(self.h_shape)
+        batch_size = X.shape[1]
+        h, u = initialize_tensor((batch_size,*self.h_shape)), initialize_tensor((batch_size,*self.h_shape))
         u_list = []
 
         """
