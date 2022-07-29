@@ -21,7 +21,7 @@ class GRUGate3D(nn.Module):
             bias=False,
         )
         self.bias = nn.Parameter(
-            torch.FloatTensor(1, output_shape[1], 1, 1, 1).fill_(0.1)
+            torch.FloatTensor(**output_shape).fill_(0.1)
         )
 
     def forward(self, encoder_out, h):
