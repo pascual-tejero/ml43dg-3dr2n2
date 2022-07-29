@@ -200,8 +200,8 @@ class LogMeshesCallback(Callback):
                 with torch.no_grad():
                     batch_pred = model.forward(images)
                     batch_pred = F.softmax(batch_pred, dim=1)
-                    batch_meshes = cubify(batch_pred[:, 1], thresh=0.5)
-                    batch_labels = cubify(labels[:, 1], thresh=0.5)
+                    batch_meshes = cubify(batch_pred[:, 1], thresh=0.4)
+                    batch_labels = cubify(labels[:, 1], thresh=0.4)
 
                 train_meshes.extend(self._pytorch3d_to_trimesh(batch_meshes))
 

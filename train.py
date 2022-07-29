@@ -8,6 +8,7 @@ from pytorch_lightning import loggers as pl_loggers
 from pytorch_lightning import seed_everything
 
 from src.callbacks import LogMeshesCallback, LogModelWightsCallback
+from src.callbacks.random_views_num import RandomNumRenders
 from src.configuration.config import TrainConfig
 from src.data.shapenet import ShapeNetDataModule
 from src.model.threedr2n2 import ThreeDeeR2N2
@@ -84,6 +85,7 @@ def train_loop(
         callbacks=[
             LogMeshesCallback(log_every=config.validate_every_n),
             LogModelWightsCallback(log_every=config.validate_every_n),
+            RandomNumRenders(),
         ],
         accumulate_grad_batches=config.accumulate_grad_batches,
     )

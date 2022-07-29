@@ -102,7 +102,9 @@ class ThreeDeeR2N2(pl.LightningModule):
     # region Pytorch Lightning
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(params=self.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.Adam(
+            params=self.parameters(), lr=self.learning_rate, weight_decay=0.00005
+        )
 
         return optimizer
 
