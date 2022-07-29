@@ -19,7 +19,7 @@ class RandomNumRenders(Callback):
         batch_idx: int,
         unused: int = 0,
     ) -> None:
-        train_dataset = trainer.trainer.datamodule.train_dataset
+        train_dataset = trainer.datamodule.train_dataset
         # If first batch
         if self.state["num_views"] == -1:
             self.state["num_views"] = train_dataset.num_renders
