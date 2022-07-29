@@ -28,7 +28,6 @@ class ThreeDeeR2N2(pl.LightningModule):
         self.grid_convRNN3D = 4
         self.hidden_size = 128
         self.h_shape = (
-            self.batch_size,
             self.hidden_size,
             self.grid_convRNN3D,
             self.grid_convRNN3D,
