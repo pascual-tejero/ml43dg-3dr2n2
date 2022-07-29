@@ -58,6 +58,7 @@ class ThreeDeeR2N2(pl.LightningModule):
         if kernel_size not in [1, 3]:
             raise Exception("Value Error: Kernel size of 3D Convolutional RNN")
         if type == "gru":
+            print("Initializing ConvGRU3D")
             self.convRNN3D = ConvGRU3D(
                 fan_in=1024,
                 hidden_size=self.hidden_size,
@@ -65,7 +66,11 @@ class ThreeDeeR2N2(pl.LightningModule):
                 kernel_size=kernel_size,
             )
         else:
-            self.convRNN3D = None
+            print("Initializing ConvLSTM3D")
+            self.convRNN3D = ConvLSTM3D(
+                feature_vector_length=1024,
+                hidden_layer_length=128
+            )
 
     def forward(self, X):
         if self.encoder is None:
