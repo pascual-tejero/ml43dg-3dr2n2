@@ -4,7 +4,7 @@ import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 
-from .convRNN3D import ConvGRU3D, Conv3dLSTMCell
+from .convRNN3D import ConvGRU3D, ConvLSTM3D
 from .decoder import Decoder
 from .encoder import Encoder
 from .utils import initialize_tensor
