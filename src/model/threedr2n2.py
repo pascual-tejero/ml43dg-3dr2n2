@@ -7,7 +7,6 @@ import torch.nn as nn
 from .convRNN3D import ConvGRU3D
 from .decoder import Decoder
 from .encoder import Encoder
-from .loss import SoftmaxWithLoss3D
 from .utils import initialize_tensor
 
 
@@ -42,7 +41,7 @@ class ThreeDeeR2N2(pl.LightningModule):
         self.initialize_decoder(encoder_decoder_type)
         self.initialize_convRNN3d(convRNN3D_type, convRNN3D_kernel_size)
 
-        self.loss = SoftmaxWithLoss3D()
+        self.loss = nn.CrossEntropyLoss()
 
     def initialize_encoder(self, type):
         if type.lower() not in ["simple", "residual"]:
