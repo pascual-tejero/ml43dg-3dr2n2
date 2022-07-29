@@ -12,6 +12,7 @@ from pytorch_lightning.loggers import LoggerCollection, TensorBoardLogger, Wandb
 from torch.utils.data import DataLoader, Subset
 from trimesh import Trimesh
 from trimesh.exchange.obj import export_obj
+import torch.nn.functional as F
 
 from src.model.threedr2n2 import ThreeDeeR2N2
 
@@ -200,6 +201,7 @@ class LogMeshesCallback(Callback):
 
                 with torch.no_grad():
                     batch_pred = model.forward(images)
+                    batch_pred = F.softmax(batch_pred, dim=1)
                     batch_meshes = cubify(batch_pred[:, 1], thresh=0.5)
                     batch_labels = cubify(labels[:, 1], thresh=0.5)
 
@@ -216,6 +218,7 @@ class LogMeshesCallback(Callback):
 
                 with torch.no_grad():
                     batch_pred = model.forward(images)
+                    batch_pred = F.softmax(batch_pred, dim=1)
                     batch_meshes = cubify(batch_pred[:, 1], thresh=0.5)
                     batch_labels = cubify(labels[:, 1], thresh=0.5)
 
