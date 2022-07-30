@@ -45,11 +45,13 @@ class ThreeDeeR2N2(pl.LightningModule):
     def initialize_encoder(self, type):
         if type.lower() not in ["simple", "residual"]:
             raise Exception("Type Error: Encoder")
+        print(f"Initializing {type.lower()} encoder")
         self.encoder = Encoder(type.lower())
 
     def initialize_decoder(self, type):
         if type.lower() not in ["simple", "residual"]:
             raise Exception("Type Error: Decoder")
+        print(f"Initializing {type.lower()} decoder")
         self.decoder = Decoder(type.lower())
 
     def initialize_convRNN3d(self, type, kernel_size):
@@ -58,7 +60,7 @@ class ThreeDeeR2N2(pl.LightningModule):
         if kernel_size not in [1, 3]:
             raise Exception("Value Error: Kernel size of 3D Convolutional RNN")
         if type == "gru":
-            print("Initializing ConvGRU3D")
+            print(f"Initializing ConvGRU3D with kernel size {kernel_size}")
             self.convRNN3D = ConvGRU3D(
                 fan_in=1024,
                 hidden_size=self.hidden_size,
@@ -66,7 +68,7 @@ class ThreeDeeR2N2(pl.LightningModule):
                 kernel_size=kernel_size,
             )
         else:
-            print("Initializing ConvLSTM3D")
+            print(f"Initializing ConvLSTM3D with kernel size {kernel_size}")
             self.convRNN3D = ConvLSTM3D(
                 feature_vector_length=1024, hidden_layer_length=128
             )
