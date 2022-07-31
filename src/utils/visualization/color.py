@@ -34,7 +34,6 @@ def visualize_colored_points(
     """
 
     opacity_values = opacity_values.flatten()
-    color_values = color_values.reshape(-1, 3)
 
     sub_idx = np.random.choice(np.arange(x.shape[0]), size=sample_size)
 
