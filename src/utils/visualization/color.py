@@ -31,7 +31,6 @@ def visualize_colored_points(
     @return go.Figure instance
     """
 
-    opacity_values = opacity_values.flatten()
     color_values = color_values.flatten()
 
     sub_idx = np.random.choice(np.arange(x.shape[0]), size=sample_size)
@@ -40,7 +39,6 @@ def visualize_colored_points(
     y = y[sub_idx]
     z = z[sub_idx]
     close_points_colors = color_values[sub_idx]
-    opacity_values = opacity_values[sub_idx]
 
     scatter = go.Scatter3d(
         x=x,
