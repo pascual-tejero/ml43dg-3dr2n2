@@ -11,7 +11,6 @@ def visualize_colored_points(
     opacity_values,
     color_values,
     *,
-    distance=0.01,
     sample_size=20000,
     return_scatter=False
 ) -> t.Union[go.Figure, go.Scatter3d]:
