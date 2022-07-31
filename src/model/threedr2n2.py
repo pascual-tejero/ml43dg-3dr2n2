@@ -20,6 +20,10 @@ class ThreeDeeR2N2(pl.LightningModule):
         learning_rate: float = 0.001,
     ):
         super(ThreeDeeR2N2, self).__init__()
+        self.encoder_decoder_type = encoder_decoder_type
+        self.convRNN3D_kernel_size = convRNN3D_type
+        self.convRNN3D_type = convRNN3D_type
+        self.convRNN3D_kernel_size = convRNN3D_kernel_size
         self.batch_size = batch_size
         self.learning_rate = learning_rate
         self.image_shape = (3, 127, 127)
@@ -70,7 +74,10 @@ class ThreeDeeR2N2(pl.LightningModule):
         else:
             print(f"Initializing ConvLSTM3D with kernel size {kernel_size}")
             self.convRNN3D = ConvLSTM3D(
-                feature_vector_length=1024, hidden_layer_length=128
+                fan_in=1024,
+                hidden_size=self.hidden_size,
+                grid_size=self.grid_convRNN3D,
+                kernel_size=kernel_size,
             )
 
     def forward(self, X):
@@ -81,24 +88,38 @@ class ThreeDeeR2N2(pl.LightningModule):
         if self.decoder is None:
             raise Exception("The decoder is not initialized!")
 
-        batch_size = X.shape[1]
-        h, u = initialize_tensor((batch_size, *self.h_shape)), initialize_tensor(
-            (batch_size, *self.h_shape)
-        )
-        u_list = []
+        if self.convRNN3D_type.lower() == "gru":
+            batch_size = X.shape[1]
+            h, u = initialize_tensor((batch_size, *self.h_shape)), initialize_tensor(
+                (batch_size, *self.h_shape)
+            )
+            u_list = []
 
-        """
-        x is the input and the size of x is (num_views, batch_size, channels, heights, widths).
-        h and u is the hidden state and activation of last time step respectively.
-        The following loop computes the forward pass of the whole network. 
-        """
-        for time_step in range(X.shape[0]):
-            encoder_out = self.encoder(X[time_step])
-            convRNN3D_out, update_gate = self.convRNN3D(encoder_out, h)
-            h = convRNN3D_out
-            u = update_gate
-            u_list.append(u)
-        decoder_out = self.decoder(h)
+            """
+            x is the input and the size of x is (num_views, batch_size, channels, heights, widths).
+            h and u is the hidden state and activation of last time step respectively.
+            The following loop computes the forward pass of the whole network. 
+            """
+            for time_step in range(X.shape[0]):
+                encoder_out = self.encoder(X[time_step])
+                convRNN3D_out, update_gate = self.convRNN3D(encoder_out, h)
+                h = convRNN3D_out
+                u = update_gate
+                u_list.append(u)
+            decoder_out = self.decoder(h)
+        else:
+            batch_size = X.shape[1]
+            h, c = initialize_tensor((batch_size, *self.h_shape)), initialize_tensor(
+                (batch_size, *self.h_shape)
+            )
+            c_list = []
+            for time_step in range(X.shape[0]):
+                encoder_out = self.encoder(X[time_step])
+                convRNN3D_out, cell_gate = self.convRNN3D(encoder_out, (h,c))
+                h = convRNN3D_out
+                c_list.append(cell_gate)
+            decoder_out = self.decoder(h)
+
         return decoder_out
 
     # region Pytorch Lightning
