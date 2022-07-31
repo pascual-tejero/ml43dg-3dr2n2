@@ -84,7 +84,7 @@ def train_loop(
         max_epochs=config.max_epochs,
         callbacks=[
             LogMeshesCallback(log_every=config.validate_every_n),
-            LogModelWightsCallback(log_every=config.validate_every_n),
+            # LogModelWightsCallback(log_every=config.validate_every_n),
             RandomNumRenders(),
         ],
         accumulate_grad_batches=config.accumulate_grad_batches,
