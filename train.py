@@ -67,7 +67,9 @@ def train_loop(
 
     # Create logger
     if config.logger_type == "wandb":
-        wandb.init(project="3dr2n2", id=run_id, entity="ml43d-project")
+        wandb.init(
+            project="3dr2n2", id=run_id, entity="ml43d-project", config=dict(config)
+        )
         logger = pl_loggers.WandbLogger(project="3dr2n2", log_model="all")
         logger.watch(model)
     elif config.logger_type == "tensorboard":
