@@ -35,6 +35,7 @@ class GRUGate3D(nn.Module):
         )
         return out
 
+
 class LSTMGate3D(nn.Module):
     def __init__(self, fan_in, filter_params, output_shape):
         super(LSTMGate3D, self).__init__()

@@ -73,7 +73,7 @@ class ConvLSTM3D(nn.Module):
             hidden_size,
             kernel_size,
             kernel_size,
-            kernel_size
+            kernel_size,
         )
 
         output_shape = (

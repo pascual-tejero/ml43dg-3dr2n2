@@ -5,13 +5,7 @@ import plotly.graph_objects as go
 
 
 def visualize_colored_points(
-    x,
-    y,
-    z,
-    color_values,
-    *,
-    sample_size=20000,
-    return_scatter=False
+    x, y, z, color_values, *, sample_size=20000, return_scatter=False
 ) -> t.Union[go.Figure, go.Scatter3d]:
     """
     Return plotly figure with colorized point near surface. Each point sampled randomly.
