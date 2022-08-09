@@ -115,7 +115,7 @@ class ThreeDeeR2N2(pl.LightningModule):
             c_list = []
             for time_step in range(X.shape[0]):
                 encoder_out = self.encoder(X[time_step])
-                convRNN3D_out, cell_gate = self.convRNN3D(encoder_out, (h,c))
+                convRNN3D_out, cell_gate = self.convRNN3D(encoder_out, (h, c))
                 h = convRNN3D_out
                 c_list.append(cell_gate)
             decoder_out = self.decoder(h)
